@@ -90,6 +90,12 @@ Odpowiedź `200`: `PagedResult<Report>`, gdzie `Report`:
 
 `status`: `"processing" | "ready" | "error"`. Pola `author`, `topic`, `group`, `pageCount` mogą być `null`, dopóki status nie jest `ready`. `error` – komunikat, gdy `status = "error"`.
 
+### `GET /reports/groups`
+
+Lista wszystkich grup laboratoryjnych (do filtra listy), posortowana.
+
+Odpowiedź `200`: `string[]`, np. `["L3", "L4"]`
+
 ### `GET /reports/{id}`
 
 Szczegóły odczytanej treści.
@@ -193,7 +199,7 @@ Odpowiedź `200`:
 ## Otwarte pytania do backendu
 
 - Typ `id` sprawozdania – `Guid` jak w Accounts? (frontend traktuje go jako string, więc zadziała)
-- Maksymalny rozmiar pliku i liczba plików na jeden upload?
+- Maksymalny rozmiar pliku i liczba plików na jeden upload? (frontend na razie blokuje pliki > 20 MB)
 - Czy historia rozmów jest trzymana po stronie backendu?
 - Jak serwować PDF przy autoryzacji JWT (blob vs podpisany link)?
 - Kiedy streaming odpowiedzi czatu?

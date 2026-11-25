@@ -1,5 +1,5 @@
 import { ApplicationConfig, provideBrowserGlobalErrorListeners } from '@angular/core';
-import { provideHttpClient, withFetch, withInterceptors } from '@angular/common/http';
+import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { provideRouter, withComponentInputBinding } from '@angular/router';
 
 import { environment } from '../environments/environment';
@@ -10,9 +10,7 @@ export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes, withComponentInputBinding()),
-    provideHttpClient(
-      withFetch(),
-      withInterceptors(environment.useMocks ? [mockApiInterceptor] : []),
-    ),
+    // Bez withFetch(): tylko backend XHR raportuje postęp wysyłania plików.
+    provideHttpClient(withInterceptors(environment.useMocks ? [mockApiInterceptor] : [])),
   ],
 };

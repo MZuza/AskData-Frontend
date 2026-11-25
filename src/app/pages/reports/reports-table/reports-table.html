@@ -1,0 +1,66 @@
+<div class="table-wrap">
+  <table>
+    <caption class="visually-hidden">
+      Lista sprawozdań
+    </caption>
+    <thead>
+      <tr>
+        <th scope="col">Plik</th>
+        <th scope="col">Autor</th>
+        <th scope="col">Temat</th>
+        <th scope="col">Grupa</th>
+        <th scope="col">Status</th>
+        <th scope="col">Wgrano</th>
+        <th scope="col"><span class="visually-hidden">Akcje</span></th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (report of reports(); track report.id) {
+        <tr>
+          <td class="file">
+            <a [routerLink]="['/reports', report.id]">{{ report.filename }}</a>
+            @if (report.error) {
+              <span class="row-error">{{ report.error }}</span>
+            }
+          </td>
+          <td>{{ report.author ?? '—' }}</td>
+          <td class="topic">{{ report.topic ?? '—' }}</td>
+          <td>{{ report.group ?? '—' }}</td>
+          <td><app-status-badge [status]="report.status" /></td>
+          <td class="date">
+            <time [attr.datetime]="report.uploadedAt">
+              {{ report.uploadedAt | date: 'dd.MM.yyyy, HH:mm' }}
+            </time>
+          </td>
+          <td class="actions">
+            @if (confirmingId() === report.id) {
+              <span class="confirm">
+                Usunąć?
+                <button
+                  type="button"
+                  class="btn btn--sm btn--danger"
+                  (click)="confirmRemove(report.id)"
+                >
+                  Tak
+                </button>
+                <button type="button" class="btn btn--sm" (click)="confirmingId.set(null)">
+                  Nie
+                </button>
+              </span>
+            } @else {
+              <button
+                type="button"
+                class="btn btn--sm"
+                [disabled]="deletingId() === report.id"
+                [attr.aria-label]="'Usuń ' + report.filename"
+                (click)="confirmingId.set(report.id)"
+              >
+                {{ deletingId() === report.id ? 'Usuwanie…' : 'Usuń' }}
+              </button>
+            }
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>

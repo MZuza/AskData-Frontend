@@ -47,14 +47,17 @@ Legenda: `- [ ]` do zrobienia, `- [x]` zrobione.
 - [x] `shared/`: `StatusBadge`, `Spinner`, `EmptyState` (input `heading`), `ErrorMessage` (`showRetry` + `retry`)
 - [x] Testy: header, trasy (`RouterTestingHarness`), komponenty shared
 
-## Etap 3 – Sprawozdania: upload i lista (`pages/reports`)
+## Etap 3 – Sprawozdania: upload i lista (`pages/reports`) ✅
 
-- [ ] `shared/FileDropzone` – drag & drop, tylko `.pdf`, wiele plików, limit rozmiaru
-- [ ] Pasek postępu uploadu (`reportProgress`) – uwaga: `withFetch()` nie raportuje postępu wysyłania; trzeba przejść na backend XHR (usunąć `withFetch()`)
-- [ ] Tabela: plik, autor, temat, grupa, status, data, akcje
-- [ ] Usuwanie z potwierdzeniem
-- [ ] Polling statusu dla `processing` (co ~3 s, stop gdy wszystko gotowe)
-- [ ] Filtrowanie / wyszukiwanie (autor, grupa, temat)
+- [x] `shared/FileDropzone` – drag & drop + wybór z dysku, tylko `.pdf`, wiele plików, limit 20 MB, lista odrzuconych
+- [x] Pasek postępu uploadu – `withFetch()` usunięte z `app.config.ts` (tylko XHR raportuje postęp wysyłania)
+- [x] Tabela (`reports-table`): plik (link do podglądu), autor, temat, grupa, status, data, akcje; komunikat błędu odczytu
+- [x] Usuwanie z potwierdzeniem w wierszu („Usunąć? Tak / Nie”)
+- [x] Polling w tle co 3 s, dopóki coś jest `processing` (bez migania spinnera); potem odświeżenie grup
+- [x] Filtry: szukaj (debounce 300 ms), grupa, status – trzymane w adresie (`?q=&group=&status=&page=`)
+- [x] Stronicowanie (20 na stronę), stany: ładowanie / błąd z „Spróbuj ponownie” / pusto / brak wyników
+- [x] Nowy endpoint `GET /reports/groups` (API.md + mock), `load(…, { background })` w serwisie
+- [x] Testy: strona sprawozdań, FileDropzone, `plural`
 
 ## Etap 4 – Podgląd sprawozdania (`pages/report-detail`)
 

@@ -153,6 +153,44 @@ a {
       background: var(--color-primary-hover);
     }
   }
+
+  &--danger {
+    border-color: var(--color-danger);
+    color: var(--color-danger);
+
+    &:hover {
+      background: var(--color-danger-soft);
+    }
+  }
+
+  &--sm {
+    padding: var(--space-1) var(--space-3);
+    font-size: 0.875rem;
+  }
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+
+  input,
+  select,
+  textarea {
+    padding: var(--space-2) var(--space-3);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    font: inherit;
+    font-size: 1rem;
+    color: var(--color-text);
+    background: var(--color-surface);
+
+    &:focus-visible {
+      border-color: var(--color-primary);
+    }
+  }
 }
 
 .visually-hidden {

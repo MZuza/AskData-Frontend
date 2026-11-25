@@ -42,7 +42,6 @@ describe('ReportsService', () => {
     expect(service.reports().map((r) => r.id)).toEqual(['r1', 'r2']);
     expect(service.totalCount()).toBe(2);
     expect(service.hasProcessing()).toBe(true);
-    expect(service.groups()).toEqual(['L3']);
     expect(service.loading()).toBe(false);
   });
 
@@ -57,6 +56,19 @@ describe('ReportsService', () => {
 
     expect(service.error()).toBe('Coś poszło nie tak.');
     expect(service.loading()).toBe(false);
+  });
+
+  it('load w tle nie zmienia stanu ładowania ani błędu', () => {
+    service.load({}, { background: true }).subscribe({ error: () => undefined });
+    expect(service.loading()).toBe(false);
+    http.expectOne(base).flush(null, { status: 500, statusText: 'Server Error' });
+    expect(service.error()).toBeNull();
+  });
+
+  it('loadGroups pobiera grupy do filtra', () => {
+    service.loadGroups().subscribe();
+    http.expectOne(`${base}/groups`).flush(['L3', 'L4']);
+    expect(service.groups()).toEqual(['L3', 'L4']);
   });
 
   it('get pobiera szczegóły sprawozdania', () => {

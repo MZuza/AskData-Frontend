@@ -60,6 +60,14 @@ export class MockDb {
     };
   }
 
+  groups(): string[] {
+    this.advance();
+    const groups = this.all()
+      .map((d) => d.group)
+      .filter((g): g is string => !!g);
+    return [...new Set(groups)].sort((a, b) => a.localeCompare(b, 'pl'));
+  }
+
   get(id: string): ReportDetails | null {
     this.advance();
     const stored = this.reports.get(id);

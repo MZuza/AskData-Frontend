@@ -74,6 +74,8 @@ function handle(req: HttpRequest<unknown>, db: MockDb): MockResult {
     if (id === undefined) {
       if (req.method === 'GET') return ok(db.list(reportFilters(req.params)));
       if (req.method === 'POST') return upload(req, db);
+    } else if (id === 'groups' && sub === undefined) {
+      if (req.method === 'GET') return ok(db.groups());
     } else if (id === 'similar' && sub === undefined) {
       if (req.method === 'GET') return ok(db.similar(similarityQuery(req.params)));
     } else if (sub === undefined) {

@@ -33,18 +33,24 @@ export class ReportsService {
   /** Czy któreś sprawozdanie jest jeszcze przetwarzane (do pollingu statusu). */
   readonly hasProcessing = computed(() => this._reports().some((r) => r.status === 'processing'));
 
-  /** Grupy laboratoryjne występujące na liście, posortowane. */
-  readonly groups = computed(() =>
-    [...new Set(this._reports().map((r) => r.group))]
-      .filter((g): g is string => !!g)
-      .sort((a, b) => a.localeCompare(b, 'pl')),
-  );
+  private readonly _groups = signal<string[]>([]);
+  /** Wszystkie grupy laboratoryjne (do filtra) – ładowane przez `loadGroups`. */
+  readonly groups = this._groups.asReadonly();
 
-  /** Pobiera stronę sprawozdań i zapisuje ją w `reports` / `totalCount`. */
-  load(filters: ReportFilters = {}): Observable<PagedResult<Report>> {
+  /**
+   * Pobiera stronę sprawozdań i zapisuje ją w `reports` / `totalCount`.
+   * `background: true` (np. polling statusu) nie rusza `loading` ani `error`.
+   */
+  load(
+    filters: ReportFilters = {},
+    options: { background?: boolean } = {},
+  ): Observable<PagedResult<Report>> {
+    const foreground = !options.background;
     return defer(() => {
-      this._loading.set(true);
-      this._error.set(null);
+      if (foreground) {
+        this._loading.set(true);
+        this._error.set(null);
+      }
       return this.http
         .get<PagedResult<Report>>(this.baseUrl, { params: toHttpParams(filters) })
         .pipe(
@@ -53,11 +59,18 @@ export class ReportsService {
               this._reports.set(page.items);
               this._totalCount.set(page.totalCount);
             },
-            error: (err: unknown) => this._error.set(errorMessage(err)),
+            error: (err: unknown) => foreground && this._error.set(errorMessage(err)),
           }),
-          finalize(() => this._loading.set(false)),
+          finalize(() => foreground && this._loading.set(false)),
         );
     });
+  }
+
+  /** Pobiera listę grup laboratoryjnych do filtra. */
+  loadGroups(): Observable<string[]> {
+    return this.http
+      .get<string[]>(`${this.baseUrl}/groups`)
+      .pipe(tap((groups) => this._groups.set(groups)));
   }
 
   /** Szczegóły odczytanej treści jednego sprawozdania. */

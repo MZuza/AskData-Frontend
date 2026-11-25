@@ -1,0 +1,25 @@
+<label class="zone" [attr.for]="inputId">
+  <input
+    [id]="inputId"
+    class="visually-hidden"
+    type="file"
+    accept=".pdf,application/pdf"
+    multiple
+    [disabled]="disabled()"
+    (change)="onPick($event)"
+  />
+  <span class="title">Przeciągnij tutaj pliki PDF</span>
+  <span class="hint">
+    albo <span class="pick">wybierz z dysku</span> · maks. {{ maxSizeMb() }} MB na plik
+  </span>
+</label>
+
+@if (rejected().length) {
+  <ul class="rejected" role="alert">
+    @for (file of rejected(); track $index) {
+      <li>
+        <strong>{{ file.name }}</strong> – {{ file.reason }}
+      </li>
+    }
+  </ul>
+}

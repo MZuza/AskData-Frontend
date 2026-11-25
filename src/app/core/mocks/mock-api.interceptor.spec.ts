@@ -49,6 +49,10 @@ describe('mockApiInterceptor', () => {
     expect((await list({ q: 'nowak' })).items.map((r) => r.id)).toEqual(['r_02']);
   });
 
+  it('zwraca listę grup', async () => {
+    expect(await firstValueFrom(http.get<string[]>(`${api}/reports/groups`))).toEqual(['L3', 'L4']);
+  });
+
   it('stronicuje wyniki', async () => {
     const page = await list({ page: 2, pageSize: 2 });
     expect(page.items).toHaveLength(2);

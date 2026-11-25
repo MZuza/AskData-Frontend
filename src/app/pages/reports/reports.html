@@ -1,9 +1,105 @@
 <header class="page-header">
   <h1>Sprawozdania</h1>
-  <p>Wgrane sprawozdania i stan ich odczytu.</p>
+  <p>Wgraj sprawozdania w PDF – po odczytaniu treści możesz pytać o nie w czacie.</p>
 </header>
 
-<app-empty-state
-  heading="Brak sprawozdań"
-  description="Tutaj pojawi się wgrywanie plików PDF i lista sprawozdań."
-/>
+<section class="upload" aria-label="Wgrywanie plików">
+  <app-file-dropzone [disabled]="!!upload()" (filesSelected)="onFiles($event)" />
+
+  @if (upload(); as u) {
+    <div class="upload-progress" role="status">
+      <span>
+        Wgrywanie {{ u.count }} {{ plural(u.count, 'pliku', 'plików', 'plików') }}… {{ u.percent }}%
+      </span>
+      <progress max="100" [value]="u.percent"></progress>
+    </div>
+  }
+
+  @if (actionError(); as message) {
+    <app-error-message [message]="message" />
+  }
+</section>
+
+<section class="filters" role="search" aria-label="Filtry">
+  <label class="field search">
+    <span>Szukaj</span>
+    <input
+      type="search"
+      placeholder="Autor, temat, nazwa pliku…"
+      [value]="q() ?? ''"
+      (input)="onSearch($event)"
+    />
+  </label>
+
+  <label class="field">
+    <span>Grupa</span>
+    <select (change)="onSelect('group', $event)">
+      <option value="" [selected]="!group()">Wszystkie</option>
+      @for (g of service.groups(); track g) {
+        <option [value]="g" [selected]="g === group()">{{ g }}</option>
+      }
+    </select>
+  </label>
+
+  <label class="field">
+    <span>Status</span>
+    <select (change)="onSelect('status', $event)">
+      <option value="" [selected]="!status()">Wszystkie</option>
+      @for (s of statuses; track s.value) {
+        <option [value]="s.value" [selected]="s.value === status()">{{ s.label }}</option>
+      }
+    </select>
+  </label>
+
+  @if (hasFilters()) {
+    <button type="button" class="btn clear" (click)="clearFilters()">Wyczyść filtry</button>
+  }
+</section>
+
+@if (service.error(); as message) {
+  <app-error-message [message]="message" [showRetry]="true" (retry)="reload()" />
+} @else if (service.loading() && !service.reports().length) {
+  <app-spinner label="Wczytywanie sprawozdań…" />
+} @else if (!service.reports().length) {
+  @if (hasFilters()) {
+    <app-empty-state heading="Brak wyników" description="Żadne sprawozdanie nie pasuje do filtrów.">
+      <button type="button" class="btn" (click)="clearFilters()">Wyczyść filtry</button>
+    </app-empty-state>
+  } @else {
+    <app-empty-state
+      heading="Brak sprawozdań"
+      description="Wgraj pierwsze pliki PDF, przeciągając je w pole powyżej."
+    />
+  }
+} @else {
+  <p class="summary" aria-live="polite">{{ summary() }}</p>
+
+  <app-reports-table
+    [class.stale]="service.loading()"
+    [reports]="service.reports()"
+    [deletingId]="deletingId()"
+    (remove)="onRemove($event)"
+  />
+
+  @if (totalPages() > 1) {
+    <nav class="pagination" aria-label="Strony listy">
+      <button
+        type="button"
+        class="btn btn--sm"
+        [disabled]="currentPage() <= 1"
+        (click)="goToPage(currentPage() - 1)"
+      >
+        ← Poprzednia
+      </button>
+      <span>Strona {{ currentPage() }} z {{ totalPages() }}</span>
+      <button
+        type="button"
+        class="btn btn--sm"
+        [disabled]="currentPage() >= totalPages()"
+        (click)="goToPage(currentPage() + 1)"
+      >
+        Następna →
+      </button>
+    </nav>
+  }
+}

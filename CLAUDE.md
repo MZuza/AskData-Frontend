@@ -29,6 +29,7 @@ src/app/
 │   ├── models/     # typy danych (Report, ChatMessage, Source…) – zgodne z docs/API.md
 │   ├── services/   # komunikacja z API, stan w signals
 │   ├── mocks/      # interceptor z fikcyjnym API (environment.useMocks)
+│   ├── utils/      # funkcje pomocnicze (np. plural – polska odmiana)
 │   └── testing/    # wspólne dane do testów
 ├── shared/         # komponenty wielokrotnego użytku (StatusBadge, FileDropzone…)
 ├── layout/         # header i szkielet strony
@@ -49,7 +50,9 @@ src/app/
 - Każda strona to lazy route w `app.routes.ts` (`loadComponent`). Parametry trasy i query (np. `?page=4`) trafiają do `input()` dzięki `withComponentInputBinding()`.
 - Adres API zawsze z `environments/environment` (`environment.apiUrl`); nigdy nie wpisywać adresów na sztywno.
 - Style: zmienne CSS z `src/styles.scss`, styl komponentu < 4 kB.
-- Teksty UI po polsku.
+- Teksty UI po polsku; liczebniki przez `plural()` z `core/utils/plural.ts`.
+- Stan filtrów / stronicowania list trzymamy w query params (czytane przez `input()`), żeby przetrwał powrót ze szczegółów.
+- HTTP bez `withFetch()` – XHR jest potrzebny do postępu wysyłania plików.
 - Testy Vitest obok plików; serwisy testowane przez `HttpTestingController`.
 - Formatowanie: Prettier.
 
