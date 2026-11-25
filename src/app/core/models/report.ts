@@ -1,3 +1,5 @@
+import { PageQuery } from './paged-result';
+
 /** Etap przetwarzania sprawozdania po stronie backendu. */
 export type ReportStatus = 'processing' | 'ready' | 'error';
 
@@ -51,8 +53,8 @@ export interface ReportDetails extends Report {
   flags: ReportFlags;
 }
 
-/** Filtry listy sprawozdań (query params `GET /reports`). */
-export interface ReportFilters {
+/** Filtry i stronicowanie listy sprawozdań (query params `GET /reports`). */
+export interface ReportFilters extends PageQuery {
   group?: string;
   status?: ReportStatus;
   /** Wyszukiwanie po autorze / temacie. */

@@ -4,7 +4,7 @@
 
 AskData to narzędzie dla prowadzących zajęcia: wgrywają sprawozdania studenckie w PDF, aplikacja odczytuje ich treść (autor, temat, grupa, sekcje, tabele z wynikami, wnioski), a prowadzący rozmawia z nimi w języku naturalnym (RAG) – pyta o treść, porównuje sprawozdania, szuka podobnych. **Każda odpowiedź ma źródło: sprawozdanie + strona.**
 
-To repo to **tylko frontend** (Angular). Backend (ekstrakcja PDF, LLM, bazy) jest rozwijany osobno przez drugą osobę z zespołu. Frontend pracuje na mockach, dopóki backend nie udostępni endpointów.
+To repo to **tylko frontend** (Angular). Backend jest rozwijany osobno przez drugą osobę z zespołu w repo `../AskData-Backend`: **.NET**, API na `http://localhost:5555/v1` (Swagger: `/swagger`), logowanie JWT, Postgres w Dockerze (`docker compose up -d`, port 5435). Frontend pracuje na mockach (`environment.useMocks`), dopóki backend nie udostępni endpointów.
 
 - Plan pracy i postęp: [docs/PLAN.md](docs/PLAN.md)
 - Kontrakt API frontend ↔ backend: [docs/API.md](docs/API.md)
@@ -28,7 +28,8 @@ src/app/
 ├── core/
 │   ├── models/     # typy danych (Report, ChatMessage, Source…) – zgodne z docs/API.md
 │   ├── services/   # komunikacja z API, stan w signals
-│   └── mocks/      # interceptor z fikcyjnym API (environment.useMocks)
+│   ├── mocks/      # interceptor z fikcyjnym API (environment.useMocks)
+│   └── testing/    # wspólne dane do testów
 ├── shared/         # komponenty wielokrotnego użytku (StatusBadge, FileDropzone…)
 ├── layout/         # header i szkielet strony
 ├── pages/          # widoki podpięte pod routing (lazy loadComponent)
@@ -39,6 +40,9 @@ src/app/
 ## Konwencje
 
 - Komponenty standalone, bez NgModule. Nazwy klas bez sufiksu `Component` (np. `Header`, `Home`), pliki `nazwa.ts/.html/.scss/.spec.ts`.
+- Serwisy: `nazwa.service.ts` / `NazwaService`, stan w prywatnych signals wystawianych przez `asReadonly()`, metody zwracają leniwe `Observable` (`defer`).
+- Format błędów i list jak w backendzie: `ApiError` (`{ errors: [{ code, message }] }`, kody `snake_case`) i `PagedResult<T>`.
+- Mocki: nowy endpoint → obsługa w `core/mocks/mock-api.interceptor.ts` + dane w `MockDb`.
 - `inject()` zamiast wstrzykiwania przez konstruktor.
 - Stan: signals (`signal`, `computed`, `input()`, `output()`); bez NgRx.
 - Szablony: nowy control flow (`@if`, `@for`, `@switch`).

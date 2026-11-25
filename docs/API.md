@@ -1,14 +1,65 @@
 # Kontrakt API – AskData
 
-> **Status: propozycja frontendu, do uzgodnienia z backendem.**
+> **Status:** konwencje (adres, `/v1`, błędy, stronicowanie, logowanie) są wzięte z istniejącego backendu.
+> Endpointy sprawozdań, czatu i podobieństwa to **propozycja frontendu, do uzgodnienia z backendem**.
 > Każda zmiana tutaj → aktualizacja modeli w `src/app/core/models/` i mocków w `src/app/core/mocks/`.
 
-Bazowy adres: `environment.apiUrl` (dev: `http://localhost:8080/api`, prod: `/api`).
-Format: JSON, pola w `camelCase`, daty w ISO 8601, identyfikatory jako string.
+Backend: **.NET**, repo `AskData-Backend` (modularny monolit, Postgres w Dockerze na porcie `5435`).
+
+Bazowy adres: `environment.apiUrl`
+- dev: `http://localhost:5555/v1` (profil `http` z `launchSettings.json`, Swagger: `http://localhost:5555/swagger`)
+- prod: `/v1`
+
+Format: JSON, pola w `camelCase`, daty w ISO 8601. CORS w backendzie: dowolne origin.
 
 ---
 
-## Sprawozdania
+## Konwencje backendu (już istnieją)
+
+### Błędy
+
+Każda odpowiedź `4xx/5xx` (`ErrorResponse`):
+
+```json
+{ "errors": [{ "code": "invalid_credentials", "message": "Nieprawidłowy e-mail lub hasło." }] }
+```
+
+Frontend: `ApiError` + `errorMessage()` w `core/models/api-error.ts`.
+
+### Stronicowanie
+
+Listy zwracają `PagedResult<T>`, query `page` (od 1) i `pageSize`:
+
+```json
+{ "items": [], "page": 1, "pageSize": 20, "totalCount": 0, "totalPages": 0 }
+```
+
+### Logowanie (moduł Accounts, `v1/accounts`)
+
+| Metoda | Ścieżka | Opis |
+| --- | --- | --- |
+| `POST` | `/accounts/sign-in` | `{ email, password }` → `JsonWebToken` (anonimowy) |
+| `POST` | `/accounts/register` | rejestracja |
+| `POST` | `/accounts/reset-password` | reset hasła |
+| `GET` | `/accounts/me` | `{ id, email, userName, roles[], createdAt }` |
+| `PUT` | `/accounts/change-user-name` | `{ userName }` |
+| `GET` | `/accounts` | `PagedResult<{ id, email, userName, createdAt }>` |
+
+`JsonWebToken`:
+
+```json
+{ "accessToken": "eyJ…", "expiresAt": 1764072000, "userId": "…", "email": "…", "roles": ["…"] }
+```
+
+Pozostałe endpointy wymagają nagłówka `Authorization: Bearer <accessToken>`.
+
+> Do sprawdzenia w backendzie: jednostka `expiresAt` (sekundy czy ms) oraz dokładne body `register`.
+
+Health: `GET /health/live`, `GET /health/ready`.
+
+---
+
+## Sprawozdania (propozycja)
 
 ### `POST /reports`
 
@@ -18,24 +69,22 @@ Odpowiedź `201`: `Report[]` – nowo utworzone sprawozdania ze statusem `proces
 
 ### `GET /reports`
 
-Lista sprawozdań. Opcjonalne query: `group`, `status`, `q` (wyszukiwanie po autorze/temacie).
+Query: `group`, `status`, `q` (wyszukiwanie po autorze/temacie/nazwie pliku), `page`, `pageSize`.
 
-Odpowiedź `200`: `Report[]`
+Odpowiedź `200`: `PagedResult<Report>`, gdzie `Report`:
 
 ```json
-[
-  {
-    "id": "r_01",
-    "filename": "Kowalski_lab3.pdf",
-    "status": "ready",
-    "uploadedAt": "2026-11-25T10:15:00Z",
-    "author": "Jan Kowalski",
-    "topic": "Wyznaczanie współczynnika lepkości",
-    "group": "L3",
-    "pageCount": 8,
-    "error": null
-  }
-]
+{
+  "id": "r_01",
+  "filename": "Kowalski_lab3.pdf",
+  "status": "ready",
+  "uploadedAt": "2026-11-25T10:15:00Z",
+  "author": "Jan Kowalski",
+  "topic": "Wyznaczanie współczynnika lepkości",
+  "group": "L3",
+  "pageCount": 8,
+  "error": null
+}
 ```
 
 `status`: `"processing" | "ready" | "error"`. Pola `author`, `topic`, `group`, `pageCount` mogą być `null`, dopóki status nie jest `ready`. `error` – komunikat, gdy `status = "error"`.
@@ -50,9 +99,7 @@ Odpowiedź `200`: `ReportDetails` = `Report` +
 {
   "authors": [{ "name": "Jan Kowalski", "studentId": "123456" }],
   "date": "2026-11-10",
-  "sections": [
-    { "title": "Wstęp", "pageStart": 1, "pageEnd": 2, "content": "..." }
-  ],
+  "sections": [{ "title": "Wstęp", "pageStart": 1, "pageEnd": 2, "content": "..." }],
   "tables": [
     {
       "caption": "Tabela 1. Wyniki pomiarów",
@@ -62,16 +109,15 @@ Odpowiedź `200`: `ReportDetails` = `Report` +
     }
   ],
   "conclusions": "...",
-  "flags": {
-    "hasResultsAnalysis": true,
-    "hasConclusions": true
-  }
+  "flags": { "hasResultsAnalysis": true, "hasConclusions": true }
 }
 ```
 
 ### `GET /reports/{id}/file`
 
-Oryginalny plik PDF (`application/pdf`). Frontend otwiera go w `<iframe>` z `#page=N`.
+Oryginalny plik PDF (`application/pdf`). Frontend wyświetla go w `<iframe>` z `#page=N`.
+
+> Uwaga: `<iframe>` nie wysyła nagłówka `Authorization`. Frontend pobierze plik przez `HttpClient` (blob) i pokaże go z `URL.createObjectURL`, albo backend udostępni krótkotrwały podpisany link – do ustalenia.
 
 ### `DELETE /reports/{id}`
 
@@ -79,7 +125,7 @@ Odpowiedź `204`.
 
 ---
 
-## Czat
+## Czat (propozycja)
 
 ### `POST /chat`
 
@@ -94,7 +140,7 @@ Odpowiedź `204`.
 
 - `reportIds` – opcjonalne; brak = wszystkie sprawozdania.
 - `group` – opcjonalne; zawęża do grupy laboratoryjnej.
-- `conversationId` – opcjonalne; brak = nowa rozmowa.
+- `conversationId` – opcjonalne; `null` = nowa rozmowa.
 
 Odpowiedź `200`:
 
@@ -113,17 +159,17 @@ Odpowiedź `200`:
 }
 ```
 
-`sources` zawsze obecne (może być puste tylko, gdy model odpowiada, że nie znalazł informacji).
+`sources` zawsze obecne (puste tylko, gdy model nie znalazł informacji).
 
 **Później:** `POST /chat/stream` – Server-Sent Events: zdarzenia `token` (`{ "text": "..." }`), na końcu `sources` i `done`.
 
 ---
 
-## Podobieństwo
+## Podobieństwo (propozycja)
 
 ### `GET /reports/similar`
 
-Opcjonalne query: `minScore` (0–1, domyślnie 0.8), `group`.
+Query: `minScore` (0–1, domyślnie 0.8), `group`.
 
 Odpowiedź `200`:
 
@@ -139,19 +185,14 @@ Odpowiedź `200`:
 
 ---
 
-## Błędy
+## Proponowane kody błędów
 
-Każdy błąd `4xx/5xx`:
-
-```json
-{ "message": "Plik nie jest prawidłowym PDF", "code": "INVALID_PDF" }
-```
-
-Przykładowe kody: `INVALID_PDF`, `FILE_TOO_LARGE`, `NOT_FOUND`, `REPORT_NOT_READY`, `LLM_UNAVAILABLE`.
+`snake_case`, jak w backendzie (`invalid_credentials`): `not_found`, `no_files`, `invalid_pdf`, `file_too_large`, `report_not_ready`, `llm_unavailable`.
 
 ## Otwarte pytania do backendu
 
-- Port dev (8080 czy 8000 dla FastAPI)?
+- Typ `id` sprawozdania – `Guid` jak w Accounts? (frontend traktuje go jako string, więc zadziała)
 - Maksymalny rozmiar pliku i liczba plików na jeden upload?
 - Czy historia rozmów jest trzymana po stronie backendu?
-- Kiedy streaming?
+- Jak serwować PDF przy autoryzacji JWT (blob vs podpisany link)?
+- Kiedy streaming odpowiedzi czatu?

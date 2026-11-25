@@ -44,8 +44,8 @@ src/
 
 Adres backendu ustawiasz w plikach `src/environments/`:
 
-- `environment.development.ts` – używany przez `npm start` (domyślnie `http://localhost:8080/api`)
-- `environment.ts` – używany w buildzie produkcyjnym (domyślnie `/api`)
+- `environment.development.ts` – używany przez `npm start` (`http://localhost:5555/v1`, `useMocks: true` – działa bez backendu)
+- `environment.ts` – używany w buildzie produkcyjnym (`/v1`, bez mocków)
 
 W kodzie importuj zawsze `environments/environment` – Angular sam podmienia plik w trybie deweloperskim.
 

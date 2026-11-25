@@ -4,6 +4,7 @@ import { Observable, defer, filter, finalize, map, tap } from 'rxjs';
 
 import { environment } from '../../../environments/environment';
 import {
+  PagedResult,
   Report,
   ReportDetails,
   ReportFilters,
@@ -21,8 +22,11 @@ export class ReportsService {
   private readonly _reports = signal<Report[]>([]);
   private readonly _loading = signal(false);
   private readonly _error = signal<string | null>(null);
+  private readonly _totalCount = signal(0);
 
   readonly reports = this._reports.asReadonly();
+  /** Liczba wszystkich sprawozdań spełniających filtry (na wszystkich stronach). */
+  readonly totalCount = this._totalCount.asReadonly();
   readonly loading = this._loading.asReadonly();
   readonly error = this._error.asReadonly();
 
@@ -36,18 +40,23 @@ export class ReportsService {
       .sort((a, b) => a.localeCompare(b, 'pl')),
   );
 
-  /** Pobiera listę sprawozdań i zapisuje ją w `reports`. */
-  load(filters: ReportFilters = {}): Observable<Report[]> {
+  /** Pobiera stronę sprawozdań i zapisuje ją w `reports` / `totalCount`. */
+  load(filters: ReportFilters = {}): Observable<PagedResult<Report>> {
     return defer(() => {
       this._loading.set(true);
       this._error.set(null);
-      return this.http.get<Report[]>(this.baseUrl, { params: toHttpParams(filters) }).pipe(
-        tap({
-          next: (reports) => this._reports.set(reports),
-          error: (err: unknown) => this._error.set(errorMessage(err)),
-        }),
-        finalize(() => this._loading.set(false)),
-      );
+      return this.http
+        .get<PagedResult<Report>>(this.baseUrl, { params: toHttpParams(filters) })
+        .pipe(
+          tap({
+            next: (page) => {
+              this._reports.set(page.items);
+              this._totalCount.set(page.totalCount);
+            },
+            error: (err: unknown) => this._error.set(errorMessage(err)),
+          }),
+          finalize(() => this._loading.set(false)),
+        );
     });
   }
 
@@ -89,9 +98,12 @@ export class ReportsService {
 
   /** Usuwa sprawozdanie i zdejmuje je z listy. */
   remove(id: string): Observable<void> {
-    return this.http
-      .delete<void>(this.reportUrl(id))
-      .pipe(tap(() => this._reports.update((list) => list.filter((r) => r.id !== id))));
+    return this.http.delete<void>(this.reportUrl(id)).pipe(
+      tap(() => {
+        this._reports.update((list) => list.filter((r) => r.id !== id));
+        this._totalCount.update((n) => Math.max(0, n - 1));
+      }),
+    );
   }
 
   /** Adres oryginalnego pliku PDF (do `<iframe>`). */
@@ -105,12 +117,11 @@ export class ReportsService {
 
   /** Nowe sprawozdania na górę listy, istniejące (po `id`) podmienia w miejscu. */
   private upsert(incoming: Report[]): void {
-    this._reports.update((list) => {
-      const byId = new Map(incoming.map((r) => [r.id, r]));
-      const updated = list.map((r) => byId.get(r.id) ?? r);
-      const known = new Set(list.map((r) => r.id));
-      const added = incoming.filter((r) => !known.has(r.id));
-      return [...added, ...updated];
-    });
+    const list = this._reports();
+    const byId = new Map(incoming.map((r) => [r.id, r]));
+    const known = new Set(list.map((r) => r.id));
+    const added = incoming.filter((r) => !known.has(r.id));
+    this._reports.set([...added, ...list.map((r) => byId.get(r.id) ?? r)]);
+    this._totalCount.update((n) => n + added.length);
   }
 }

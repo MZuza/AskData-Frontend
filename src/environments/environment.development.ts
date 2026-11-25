@@ -1,4 +1,7 @@
 export const environment = {
   production: false,
-  apiUrl: 'http://localhost:8080/api',
+  /** Backend .NET (AskData-Backend, profil `http`). */
+  apiUrl: 'http://localhost:5555/v1',
+  /** `true` = odpowiedzi z `core/mocks` zamiast prawdziwego backendu. */
+  useMocks: true,
 };

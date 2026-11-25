@@ -2,7 +2,7 @@
 
 Zasada: frontend nie czeka na backend. Wszystko budujemy najpierw na mockach (`environment.useMocks`) za tym samym interfejsem serwisów, a kontrakt API trzymamy w [API.md](API.md).
 
-Kolejność: 0 → 1 → 2 → 3 → 4 → 5 → 6 → 7. Etapy 3–6 działają w pełni na mockach.
+Kolejność: 0 → 1 → 1b → 2 → 3 → 4 → 5 → 6 → 7. Etapy 3–6 działają w pełni na mockach.
 
 Legenda: `- [ ]` do zrobienia, `- [x]` zrobione.
 
@@ -15,17 +15,28 @@ Legenda: `- [ ]` do zrobienia, `- [x]` zrobione.
 - [x] `docs/API.md` – proponowany kontrakt API
 - [ ] Uzgodnić `docs/API.md` z osobą od backendu
 
-## Etap 1 – Fundamenty: modele, serwisy, mocki
+## Etap 1 – Fundamenty: modele, serwisy, mocki ✅
 
-- [ ] `core/models/report.ts` – `Report`, `ReportStatus`, `ReportDetails`, `ReportSection`, `ReportTable`
-- [ ] `core/models/chat.ts` – `ChatMessage`, `ChatRequest`, `ChatResponse`, `Source`
-- [ ] `core/models/similarity.ts` – `SimilarPair`
-- [ ] `core/services/reports.service.ts` – upload, list, get, delete, URL pliku PDF
-- [ ] `core/services/chat.service.ts` – wysyłanie pytania, historia w signals
-- [ ] `core/services/similarity.service.ts`
-- [ ] `environment.useMocks` (dev: `true`, prod: `false`)
-- [ ] `core/mocks/mock-api.interceptor.ts` + fikcyjne dane (opóźnienia, przejście `processing → ready`)
-- [ ] Testy serwisów (`HttpTestingController`)
+- [x] `core/models/report.ts` – `Report`, `ReportStatus`, `ReportDetails`, `ReportSection`, `ReportTable`, `UploadProgress`
+- [x] `core/models/chat.ts` – `ChatMessage`, `ChatRequest`, `ChatResponse`, `ChatContext`, `Source`
+- [x] `core/models/similarity.ts` – `SimilarPair`
+- [x] `core/models/paged-result.ts`, `api-error.ts` – zgodne z konwencjami backendu (.NET)
+- [x] `core/services/reports.service.ts` – load (stronicowanie), get, upload z postępem, remove, fileUrl
+- [x] `core/services/chat.service.ts` – wysyłanie pytania, historia i `conversationId` w signals
+- [x] `core/services/similarity.service.ts`
+- [x] `environment.useMocks` (dev: `true`, prod: `false`), `apiUrl` → backend .NET (`:5555/v1`)
+- [x] `core/mocks/` – `MockDb` (w pamięci), `mockApiInterceptor`, dane przykładowe, `MOCK_API_CONFIG`
+- [x] Testy serwisów (`HttpTestingController`) i interceptora
+- [ ] **Uruchomić `npm test` i `npm run build`** – kod pisany bez Node w środowisku Claude, niezweryfikowany
+
+## Etap 1b – Logowanie (backend ma JWT, moduł Accounts)
+
+- [ ] `core/models/auth.ts` – `JsonWebToken`, `Account`, `SignInRequest`
+- [ ] `core/services/auth.service.ts` – sign-in, sign-out, `me`, token w `localStorage`, signal `currentUser`
+- [ ] `core/auth/auth.interceptor.ts` – `Authorization: Bearer …`, wylogowanie przy `401`
+- [ ] `authGuard` + strony `pages/sign-in` (i ewentualnie `register`)
+- [ ] Mock `POST /accounts/sign-in` i `GET /accounts/me`
+- [ ] Sprawdzić z backendem jednostkę `expiresAt` i body `register`
 
 ## Etap 2 – Layout i nawigacja
 
@@ -38,7 +49,7 @@ Legenda: `- [ ]` do zrobienia, `- [x]` zrobione.
 ## Etap 3 – Sprawozdania: upload i lista (`pages/reports`)
 
 - [ ] `shared/FileDropzone` – drag & drop, tylko `.pdf`, wiele plików, limit rozmiaru
-- [ ] Pasek postępu uploadu (`reportProgress`)
+- [ ] Pasek postępu uploadu (`reportProgress`) – uwaga: `withFetch()` nie raportuje postępu wysyłania; trzeba przejść na backend XHR (usunąć `withFetch()`)
 - [ ] Tabela: plik, autor, temat, grupa, status, data, akcje
 - [ ] Usuwanie z potwierdzeniem
 - [ ] Polling statusu dla `processing` (co ~3 s, stop gdy wszystko gotowe)
@@ -49,7 +60,8 @@ Legenda: `- [ ]` do zrobienia, `- [x]` zrobione.
 - [ ] Metadane (autor, temat, grupa, data, liczba stron)
 - [ ] Sekcje (rozwijane), tabele wyników jako `<table>`, wnioski
 - [ ] Flagi braków (np. „brak sekcji analizy wyników”)
-- [ ] Podgląd PDF: `<iframe>` + `#page=N` (później ewentualnie `ngx-extended-pdf-viewer`)
+- [ ] Podgląd PDF: pobranie pliku jako blob (JWT!) → `URL.createObjectURL` → `<iframe>` + `#page=N`; mock zwraca wgrany plik
+- [ ] (opcjonalnie) `ngx-extended-pdf-viewer`, jeśli natywny viewer nie wystarczy
 - [ ] Obsługa `?page=N` przez `input()` – skok do strony ze źródła czatu
 
 ## Etap 5 – Czat (`pages/chat`)
