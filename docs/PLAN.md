@@ -59,14 +59,17 @@ Legenda: `- [ ]` do zrobienia, `- [x]` zrobione.
 - [x] Nowy endpoint `GET /reports/groups` (API.md + mock), `load(…, { background })` w serwisie
 - [x] Testy: strona sprawozdań, FileDropzone, `plural`
 
-## Etap 4 – Podgląd sprawozdania (`pages/report-detail`)
+## Etap 4 – Podgląd sprawozdania (`pages/report-detail`) ✅
 
-- [ ] Metadane (autor, temat, grupa, data, liczba stron)
-- [ ] Sekcje (rozwijane), tabele wyników jako `<table>`, wnioski
-- [ ] Flagi braków (np. „brak sekcji analizy wyników”)
-- [ ] Podgląd PDF: pobranie pliku jako blob (JWT!) → `URL.createObjectURL` → `<iframe>` + `#page=N`; mock zwraca wgrany plik
-- [ ] (opcjonalnie) `ngx-extended-pdf-viewer`, jeśli natywny viewer nie wystarczy
-- [ ] Obsługa `?page=N` przez `input()` – skok do strony ze źródła czatu
+- [x] Metadane: autorzy (z nr indeksu), grupa, data, liczba stron, status
+- [x] Sekcje (`<details>`), tabele wyników jako `<table>`, wnioski
+- [x] Braki w sprawozdaniu („Brak sekcji z analizą wyników”, „Brak wniosków”) z `flags`
+- [x] `shared/PdfViewer`: PDF pobierany jako blob (gotowe pod JWT) → `URL.createObjectURL` → `<iframe>` + `#page=N`; stany ładowanie / brak pliku / błąd
+- [x] `?page=N` w adresie (input) – linki „s. N” przy sekcjach i tabelach, ograniczenie do liczby stron
+- [x] Odpytywanie co 3 s, dopóki sprawozdanie jest `processing`
+- [x] Mock: generowany PDF z treścią przykładowych sprawozdań (`core/mocks/mock-pdf.ts`), wgrane pliki zwracane bez zmian
+- [x] Testy: strona szczegółów, generator PDF, `getFile`
+- [ ] (opcjonalnie) `ngx-extended-pdf-viewer`, jeśli natywny viewer nie wystarczy (np. podświetlanie cytatu)
 
 ## Etap 5 – Czat (`pages/chat`)
 

@@ -24,7 +24,7 @@ import {
 } from 'rxjs';
 
 import { ReportFilters, ReportStatus, errorMessage } from '../../core/models';
-import { ReportsService } from '../../core/services/reports.service';
+import { REPORT_POLL_INTERVAL_MS, ReportsService } from '../../core/services/reports.service';
 import { plural } from '../../core/utils/plural';
 import { EmptyState } from '../../shared/empty-state/empty-state';
 import { ErrorMessage } from '../../shared/error-message/error-message';
@@ -33,7 +33,6 @@ import { Spinner } from '../../shared/spinner/spinner';
 import { ReportsTable } from './reports-table/reports-table';
 
 export const PAGE_SIZE = 20;
-export const POLL_INTERVAL_MS = 3000;
 
 const STATUSES: { value: ReportStatus; label: string }[] = [
   { value: 'ready', label: 'Gotowe' },
@@ -106,7 +105,7 @@ export class Reports {
       .pipe(
         switchMap((processing) =>
           processing
-            ? interval(POLL_INTERVAL_MS).pipe(
+            ? interval(REPORT_POLL_INTERVAL_MS).pipe(
                 exhaustMap(() =>
                   this.service
                     .load(this.filters(), { background: true })

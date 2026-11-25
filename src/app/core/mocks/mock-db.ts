@@ -14,6 +14,7 @@ import {
 } from '../models';
 import { MOCK_API_CONFIG } from './mock-api.config';
 import { seedReports, seedSimilarPairs } from './mock-data';
+import { mockReportPdf } from './mock-pdf';
 
 interface StoredReport {
   details: ReportDetails;
@@ -74,8 +75,16 @@ export class MockDb {
     return stored ? clone(stored.details) : null;
   }
 
+  /** Wgrany plik albo – dla danych przykładowych – wygenerowany PDF z treścią sprawozdania. */
   file(id: string): Blob | null {
-    return this.reports.get(id)?.file ?? null;
+    const stored = this.reports.get(id);
+    if (!stored) {
+      return null;
+    }
+    if (stored.file) {
+      return stored.file;
+    }
+    return stored.details.status === 'ready' ? mockReportPdf(stored.details) : null;
   }
 
   add(files: File[]): Report[] {

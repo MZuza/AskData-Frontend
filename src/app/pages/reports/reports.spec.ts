@@ -8,7 +8,8 @@ import { RouterTestingHarness } from '@angular/router/testing';
 import { environment } from '../../../environments/environment';
 import { paged, report } from '../../core/testing/fixtures';
 import { FileDropzone } from '../../shared/file-dropzone/file-dropzone';
-import { POLL_INTERVAL_MS, Reports } from './reports';
+import { REPORT_POLL_INTERVAL_MS } from '../../core/services/reports.service';
+import { Reports } from './reports';
 
 describe('Reports', () => {
   const base = `${environment.apiUrl}/reports`;
@@ -125,13 +126,13 @@ describe('Reports', () => {
     expectList().flush(paged([report('r1', 'processing')]));
     await stable();
 
-    vi.advanceTimersByTime(POLL_INTERVAL_MS);
+    vi.advanceTimersByTime(REPORT_POLL_INTERVAL_MS);
     expectList().flush(paged([report('r1', 'ready')]));
     await stable();
 
     // Po zakończeniu przetwarzania: odświeżenie grup, koniec pollingu.
     http.expectOne(`${base}/groups`).flush(['L1']);
-    vi.advanceTimersByTime(POLL_INTERVAL_MS * 2);
+    vi.advanceTimersByTime(REPORT_POLL_INTERVAL_MS * 2);
     http.expectNone((r) => r.url === base);
     expect(el().querySelector('app-status-badge')?.textContent?.trim()).toBe('Gotowe');
   });

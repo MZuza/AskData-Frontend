@@ -1,11 +1,145 @@
 <a routerLink="/reports" class="back-link">← Wszystkie sprawozdania</a>
 
-<header class="page-header">
-  <h1>Sprawozdanie</h1>
-  <p>Identyfikator: {{ id() }}</p>
-</header>
+@if (error(); as message) {
+  <app-error-message [message]="message" [showRetry]="true" (retry)="reload()" />
+} @else if (report(); as r) {
+  <header class="page-header">
+    <div class="title-row">
+      <h1>{{ r.topic ?? r.filename }}</h1>
+      <app-status-badge [status]="r.status" />
+    </div>
+    <p>{{ r.filename }}</p>
+  </header>
 
-<app-empty-state
-  heading="Podgląd sprawozdania"
-  description="Tutaj pojawią się odczytane dane (autor, sekcje, tabele, wnioski) i podgląd PDF."
-/>
+  <div class="layout">
+    <div class="content">
+      @switch (r.status) {
+        @case ('processing') {
+          <app-spinner label="Sprawozdanie jest jeszcze przetwarzane – treść pojawi się sama." />
+        }
+        @case ('error') {
+          <app-error-message [message]="r.error ?? 'Nie udało się odczytać sprawozdania.'" />
+        }
+        @case ('ready') {
+          <dl class="meta">
+            <div>
+              <dt>{{ r.authors.length > 1 ? 'Autorzy' : 'Autor' }}</dt>
+              <dd>
+                @for (author of r.authors; track author.name) {
+                  <span class="author">
+                    {{ author.name }}
+                    @if (author.studentId) {
+                      <span class="muted">({{ author.studentId }})</span>
+                    }
+                  </span>
+                } @empty {
+                  —
+                }
+              </dd>
+            </div>
+            <div>
+              <dt>Grupa</dt>
+              <dd>{{ r.group ?? '—' }}</dd>
+            </div>
+            <div>
+              <dt>Data</dt>
+              <dd>{{ r.date ? (r.date | date: 'dd.MM.yyyy') : '—' }}</dd>
+            </div>
+            <div>
+              <dt>Strony</dt>
+              <dd>{{ r.pageCount ?? '—' }}</dd>
+            </div>
+          </dl>
+
+          @if (warnings().length) {
+            <ul class="warnings" aria-label="Braki w sprawozdaniu">
+              @for (warning of warnings(); track warning) {
+                <li>{{ warning }}</li>
+              }
+            </ul>
+          }
+
+          <section>
+            <h2>Sekcje</h2>
+            @for (section of r.sections; track $index) {
+              <details [open]="$first">
+                <summary>
+                  <span>{{ section.title }}</span>
+                  <a
+                    class="page-link"
+                    [routerLink]="[]"
+                    [queryParams]="{ page: section.pageStart }"
+                    queryParamsHandling="merge"
+                    [replaceUrl]="true"
+                    [class.active]="currentPage() === section.pageStart"
+                    >{{ pageRange(section.pageStart, section.pageEnd) }}</a
+                  >
+                </summary>
+                <p>{{ section.content }}</p>
+              </details>
+            } @empty {
+              <p class="muted">Nie odczytano żadnych sekcji.</p>
+            }
+          </section>
+
+          @if (r.tables.length) {
+            <section>
+              <h2>Tabele z wynikami</h2>
+              @for (table of r.tables; track $index) {
+                <figure class="result-table">
+                  <figcaption>
+                    <span>{{ table.caption ?? 'Tabela bez podpisu' }}</span>
+                    <a
+                      class="page-link"
+                      [routerLink]="[]"
+                      [queryParams]="{ page: table.page }"
+                      queryParamsHandling="merge"
+                      [replaceUrl]="true"
+                      [class.active]="currentPage() === table.page"
+                      >s. {{ table.page }}</a
+                    >
+                  </figcaption>
+                  <div class="table-scroll">
+                    <table>
+                      <thead>
+                        <tr>
+                          @for (header of table.headers; track $index) {
+                            <th scope="col">{{ header }}</th>
+                          }
+                        </tr>
+                      </thead>
+                      <tbody>
+                        @for (row of table.rows; track $index) {
+                          <tr>
+                            @for (cell of row; track $index) {
+                              <td>{{ cell }}</td>
+                            }
+                          </tr>
+                        }
+                      </tbody>
+                    </table>
+                  </div>
+                </figure>
+              }
+            </section>
+          }
+
+          <section>
+            <h2>Wnioski</h2>
+            @if (r.conclusions) {
+              <blockquote class="conclusions">{{ r.conclusions }}</blockquote>
+            } @else {
+              <p class="muted">W sprawozdaniu nie znaleziono wniosków.</p>
+            }
+          </section>
+        }
+      }
+    </div>
+
+    <aside class="viewer" aria-label="Oryginalny PDF">
+      <app-pdf-viewer [reportId]="r.id" [page]="currentPage()" [label]="'PDF: ' + r.filename" />
+    </aside>
+  </div>
+} @else {
+  <app-spinner label="Wczytywanie sprawozdania…" />
+}

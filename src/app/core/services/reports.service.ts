@@ -13,6 +13,9 @@ import {
 } from '../models';
 import { toHttpParams } from './http-params';
 
+/** Co ile odświeżać sprawozdania, które są jeszcze przetwarzane. */
+export const REPORT_POLL_INTERVAL_MS = 3000;
+
 /** Sprawozdania: lista (stan w signals), szczegóły, upload, usuwanie. */
 @Injectable({ providedIn: 'root' })
 export class ReportsService {
@@ -119,9 +122,19 @@ export class ReportsService {
     );
   }
 
-  /** Adres oryginalnego pliku PDF (do `<iframe>`). */
+  /** Adres oryginalnego pliku PDF. */
   fileUrl(id: string): string {
     return `${this.reportUrl(id)}/file`;
+  }
+
+  /**
+   * Pobiera oryginalny PDF jako blob – przez HttpClient, więc z nagłówkiem autoryzacji
+   * (sam `<iframe src>` by go nie wysłał). Typ wymuszony na PDF, żeby przeglądarka go wyświetliła.
+   */
+  getFile(id: string): Observable<Blob> {
+    return this.http
+      .get(this.fileUrl(id), { responseType: 'blob' })
+      .pipe(map((blob) => new Blob([blob], { type: 'application/pdf' })));
   }
 
   private reportUrl(id: string): string {

@@ -86,6 +86,20 @@ describe('mockApiInterceptor', () => {
     expect(uploaded.author).toBe('Lewandowski');
   });
 
+  it('zwraca PDF sprawozdania z odpowiednią liczbą stron, a dla błędnego 404', async () => {
+    const blob = await firstValueFrom(
+      http.get(`${api}/reports/r_01/file`, { responseType: 'blob' }),
+    );
+    const text = await blob.text();
+    expect(text.startsWith('%PDF-1.4')).toBe(true);
+    expect(text).toContain('/Count 8');
+    expect(text.trimEnd().endsWith('%%EOF')).toBe(true);
+
+    await expect(
+      firstValueFrom(http.get(`${api}/reports/r_05/file`, { responseType: 'blob' })),
+    ).rejects.toMatchObject({ status: 404 });
+  });
+
   it('odrzuca pliki, które nie są PDF', async () => {
     const body = new FormData();
     body.append('files', new File(['x'], 'notatki.docx'));

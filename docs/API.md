@@ -124,7 +124,7 @@ Odpowiedź `200`: `ReportDetails` = `Report` +
 
 Oryginalny plik PDF (`application/pdf`). Frontend wyświetla go w `<iframe>` z `#page=N`.
 
-> Uwaga: `<iframe>` nie wysyła nagłówka `Authorization`. Frontend pobierze plik przez `HttpClient` (blob) i pokaże go z `URL.createObjectURL`, albo backend udostępni krótkotrwały podpisany link – do ustalenia.
+Frontend pobiera plik przez `HttpClient` jako blob (więc z nagłówkiem `Authorization`) i pokazuje go przez `URL.createObjectURL` w `<iframe>` – backend nie musi robić podpisanych linków. Wystarczy, że endpoint zwraca bajty PDF; `Content-Type` frontend i tak ustawia na `application/pdf`. Brak pliku → `404`.
 
 ### `DELETE /reports/{id}`
 
@@ -201,5 +201,4 @@ Odpowiedź `200`:
 - Typ `id` sprawozdania – `Guid` jak w Accounts? (frontend traktuje go jako string, więc zadziała)
 - Maksymalny rozmiar pliku i liczba plików na jeden upload? (frontend na razie blokuje pliki > 20 MB)
 - Czy historia rozmów jest trzymana po stronie backendu?
-- Jak serwować PDF przy autoryzacji JWT (blob vs podpisany link)?
 - Kiedy streaming odpowiedzi czatu?

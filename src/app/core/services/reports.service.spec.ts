@@ -112,6 +112,16 @@ describe('ReportsService', () => {
     expect(service.totalCount()).toBe(1);
   });
 
+  it('getFile pobiera PDF jako blob typu application/pdf', async () => {
+    let file: Blob | undefined;
+    service.getFile('r1').subscribe((blob) => (file = blob));
+    const req = http.expectOne(`${base}/r1/file`);
+    expect(req.request.responseType).toBe('blob');
+    req.flush(new Blob(['%PDF-1.4'], { type: 'application/octet-stream' }));
+
+    expect(file?.type).toBe('application/pdf');
+  });
+
   it('fileUrl koduje identyfikator', () => {
     expect(service.fileUrl('a/b')).toBe(`${base}/a%2Fb/file`);
   });

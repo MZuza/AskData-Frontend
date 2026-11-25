@@ -1,16 +1,24 @@
+import { provideHttpClient } from '@angular/common/http';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { Title } from '@angular/platform-browser';
 import { Router, provideRouter, withComponentInputBinding } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
 
+import { environment } from '../environments/environment';
 import { routes } from './app.routes';
+import { details } from './core/testing/fixtures';
 
 describe('routes', () => {
   let harness: RouterTestingHarness;
 
   beforeEach(async () => {
     TestBed.configureTestingModule({
-      providers: [provideRouter(routes, withComponentInputBinding())],
+      providers: [
+        provideRouter(routes, withComponentInputBinding()),
+        provideHttpClient(),
+        provideHttpClientTesting(),
+      ],
     });
     harness = await RouterTestingHarness.create();
   });
@@ -35,7 +43,11 @@ describe('routes', () => {
 
   it('przekazuje id sprawozdania z adresu do komponentu', async () => {
     await harness.navigateByUrl('/reports/r_01');
-    expect(text()).toContain('r_01');
+    TestBed.inject(HttpTestingController)
+      .expectOne(`${environment.apiUrl}/reports/r_01`)
+      .flush(details('r_01'));
+    await harness.fixture.whenStable();
+    expect(text()).toContain('Wahadło matematyczne');
   });
 
   it('pokazuje stronę 404 dla nieznanego adresu', async () => {

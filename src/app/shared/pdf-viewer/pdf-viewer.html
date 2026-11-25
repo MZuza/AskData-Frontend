@@ -1,0 +1,26 @@
+@switch (state().kind) {
+  @case ('loading') {
+    <div class="placeholder"><app-spinner label="Wczytywanie PDF…" /></div>
+  }
+  @case ('missing') {
+    <app-empty-state
+      heading="Brak pliku PDF"
+      description="Oryginalny plik tego sprawozdania nie jest dostępny."
+    />
+  }
+  @case ('error') {
+    <app-error-message
+      [message]="'Nie udało się wczytać PDF. ' + errorText()"
+      [showRetry]="true"
+      (retry)="reload()"
+    />
+  }
+  @case ('ready') {
+    @for (frame of frames(); track frame.key) {
+      <iframe [src]="frame.src" [title]="label()"></iframe>
+    }
+    @if (fileHref(); as href) {
+      <a class="open" [href]="href" target="_blank" rel="noopener">Otwórz PDF w nowej karcie ↗</a>
+    }
+  }
+}
