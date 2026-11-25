@@ -127,7 +127,8 @@ export function seedReports(): ReportDetails[] {
           title: 'Wstęp',
           pageStart: 1,
           pageEnd: 1,
-          content: 'Okres drgań wahadła matematycznego zależy od jego długości i przyspieszenia ziemskiego.',
+          content:
+            'Okres drgań wahadła matematycznego zależy od jego długości i przyspieszenia ziemskiego.',
         },
         {
           title: 'Pomiary',

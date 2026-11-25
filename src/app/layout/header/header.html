@@ -1,3 +1,18 @@
 <header class="header">
-  <a routerLink="/" class="logo">AskData</a>
+  <div class="brand">
+    <a routerLink="/" class="logo">AskData</a>
+    @if (useMocks) {
+      <span class="mock-badge" title="Odpowiedzi z core/mocks (environment.useMocks)">
+        dane testowe
+      </span>
+    }
+  </div>
+
+  <nav class="nav" aria-label="Główna nawigacja">
+    @for (link of links; track link.path) {
+      <a [routerLink]="link.path" routerLinkActive="active" ariaCurrentWhenActive="page">
+        {{ link.label }}
+      </a>
+    }
+  </nav>
 </header>

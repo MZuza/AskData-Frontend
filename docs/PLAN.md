@@ -27,7 +27,7 @@ Legenda: `- [ ]` do zrobienia, `- [x]` zrobione.
 - [x] `environment.useMocks` (dev: `true`, prod: `false`), `apiUrl` → backend .NET (`:5555/v1`)
 - [x] `core/mocks/` – `MockDb` (w pamięci), `mockApiInterceptor`, dane przykładowe, `MOCK_API_CONFIG`
 - [x] Testy serwisów (`HttpTestingController`) i interceptora
-- [ ] **Uruchomić `npm test` i `npm run build`** – kod pisany bez Node w środowisku Claude, niezweryfikowany
+- [x] `npm test` i `npm run build` przechodzą
 
 ## Etap 1b – Logowanie (backend ma JWT, moduł Accounts)
 
@@ -38,13 +38,14 @@ Legenda: `- [ ]` do zrobienia, `- [x]` zrobione.
 - [ ] Mock `POST /accounts/sign-in` i `GET /accounts/me`
 - [ ] Sprawdzić z backendem jednostkę `expiresAt` i body `register`
 
-## Etap 2 – Layout i nawigacja
+## Etap 2 – Layout i nawigacja ✅
 
-- [ ] Header: linki Sprawozdania / Czat / Podobieństwo (`routerLinkActive`)
-- [ ] Trasy: `''` → `reports`, `reports`, `reports/:id`, `chat`, `similar` (lazy)
-- [ ] Usunąć lub zamienić placeholder `Home`
-- [ ] Zmienne w `styles.scss`: spacing, radius, kolory statusów (opcjonalnie dark mode)
-- [ ] `shared/`: `StatusBadge`, `Spinner`, `EmptyState`, `ErrorMessage`
+- [x] Header: linki Sprawozdania / Czat / Podobieństwo (`routerLinkActive`, `aria-current`), znacznik „dane testowe” przy `useMocks`
+- [x] Trasy: `''` → `reports`, `reports`, `reports/:id`, `chat`, `similar`, `**` → `NotFound` (lazy, tytuły kart)
+- [x] Usunięty placeholder `Home`; strony-zaślepki do wypełnienia w etapach 3–6
+- [x] Zmienne w `styles.scss`: kolory (z wersją ciemną przez `prefers-color-scheme`), spacing, radius, focus ring; klasy `.page-header`, `.back-link`, `.btn`, `.btn--primary`, `.visually-hidden`
+- [x] `shared/`: `StatusBadge`, `Spinner`, `EmptyState` (input `heading`), `ErrorMessage` (`showRetry` + `retry`)
+- [x] Testy: header, trasy (`RouterTestingHarness`), komponenty shared
 
 ## Etap 3 – Sprawozdania: upload i lista (`pages/reports`)
 

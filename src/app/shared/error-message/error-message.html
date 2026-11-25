@@ -1,0 +1,4 @@
+<p class="message">{{ message() }}</p>
+@if (showRetry()) {
+  <button type="button" class="btn" (click)="retry.emit()">Spróbuj ponownie</button>
+}

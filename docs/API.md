@@ -7,6 +7,7 @@
 Backend: **.NET**, repo `AskData-Backend` (modularny monolit, Postgres w Dockerze na porcie `5435`).
 
 Bazowy adres: `environment.apiUrl`
+
 - dev: `http://localhost:5555/v1` (profil `http` z `launchSettings.json`, Swagger: `http://localhost:5555/swagger`)
 - prod: `/v1`
 
@@ -36,14 +37,14 @@ Listy zwracają `PagedResult<T>`, query `page` (od 1) i `pageSize`:
 
 ### Logowanie (moduł Accounts, `v1/accounts`)
 
-| Metoda | Ścieżka | Opis |
-| --- | --- | --- |
-| `POST` | `/accounts/sign-in` | `{ email, password }` → `JsonWebToken` (anonimowy) |
-| `POST` | `/accounts/register` | rejestracja |
-| `POST` | `/accounts/reset-password` | reset hasła |
-| `GET` | `/accounts/me` | `{ id, email, userName, roles[], createdAt }` |
-| `PUT` | `/accounts/change-user-name` | `{ userName }` |
-| `GET` | `/accounts` | `PagedResult<{ id, email, userName, createdAt }>` |
+| Metoda | Ścieżka                      | Opis                                               |
+| ------ | ---------------------------- | -------------------------------------------------- |
+| `POST` | `/accounts/sign-in`          | `{ email, password }` → `JsonWebToken` (anonimowy) |
+| `POST` | `/accounts/register`         | rejestracja                                        |
+| `POST` | `/accounts/reset-password`   | reset hasła                                        |
+| `GET`  | `/accounts/me`               | `{ id, email, userName, roles[], createdAt }`      |
+| `PUT`  | `/accounts/change-user-name` | `{ userName }`                                     |
+| `GET`  | `/accounts`                  | `PagedResult<{ id, email, userName, createdAt }>`  |
 
 `JsonWebToken`:
 

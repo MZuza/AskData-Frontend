@@ -1,13 +1,67 @@
 .header {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  padding: 1rem 1.5rem;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-6);
+  padding: var(--space-3) var(--space-6);
   background: var(--color-primary);
 }
 
+.brand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
 .logo {
-  color: #fff;
+  color: var(--color-primary-contrast);
   font-size: 1.25rem;
   font-weight: 700;
   text-decoration: none;
+}
+
+.mock-badge {
+  padding: 0.125rem var(--space-2);
+  border-radius: var(--radius-full);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-warning);
+  background: var(--color-warning-soft);
+}
+
+.nav {
+  display: flex;
+  gap: var(--space-1);
+  overflow-x: auto;
+
+  a {
+    padding: var(--space-2) var(--space-3);
+    border-radius: var(--radius);
+    color: var(--color-primary-contrast);
+    text-decoration: none;
+    white-space: nowrap;
+    opacity: 0.85;
+
+    &:hover {
+      opacity: 1;
+      background: rgb(255 255 255 / 0.12);
+    }
+
+    &.active {
+      opacity: 1;
+      font-weight: 600;
+      background: rgb(255 255 255 / 0.2);
+    }
+  }
+}
+
+@media (max-width: 600px) {
+  .header {
+    padding: var(--space-3) var(--space-4);
+  }
+
+  .nav {
+    width: 100%;
+  }
 }

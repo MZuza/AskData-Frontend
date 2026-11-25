@@ -63,5 +63,4 @@ export interface ReportFilters extends PageQuery {
 
 /** Postęp wgrywania plików emitowany przez `ReportsService.upload`. */
 export type UploadProgress =
-  | { state: 'progress'; percent: number }
-  | { state: 'done'; reports: Report[] };
+  { state: 'progress'; percent: number } | { state: 'done'; reports: Report[] };
